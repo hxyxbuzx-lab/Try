@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Integrado de la Problemática - Gobernanza de Residuos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --pub: #2563EB;
+            --priv: #D97706;
+            --soc: #8B5CF6;
+            --riesgo: #E11D48;
+            --opp: #10B981;
+        }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); height: 100vh; width: 100vw; overflow: hidden; }
+        .top-header { position: fixed; top: 0; left: 0; width: 100%; height: 70px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 2000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .menu-toggle-btn { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .menu-toggle-btn:hover { background: #f1f5f9; color: var(--pub); }
+        .main-title { font-family: 'Poppins', sans-serif; font-size: 1.15rem; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .main-title .material-symbols-outlined { color: var(--pub); font-size: 24px; }
+        .side-menu { position: fixed; top: 0; left: -350px; width: 320px; height: 100vh; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); box-shadow: 15px 0 40px rgba(0,0,0,0.08); z-index: 3000; transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding: 30px 25px; border-right: 1px solid rgba(0,0,0,0.05); box-sizing: border-box; overflow-y: auto; }
+        .side-menu.open { left: 0; }
+        .menu-close-btn { align-self: flex-end; background: transparent; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); margin-bottom: 20px; }
+        .menu-close-btn:hover { color: var(--riesgo); }
+        .menu-section { margin-bottom: 30px; }
+        .menu-section h4 { font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .menu-btn { width: 100%; padding: 14px 15px; border: none; background: transparent; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; margin-bottom: 8px; text-align: left; }
+        .menu-btn:hover { background: #f8fafc; color: var(--pub); }
+        .menu-btn.active { background: #eff6ff; color: var(--pub); }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(2px); z-index: 2500; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+        .menu-overlay.active { opacity: 1; pointer-events: auto; }
+        .tab-pane { display: none; width: 100%; height: 100vh; position: absolute; top: 0; left: 0; padding-top: 70px; box-sizing: border-box; }
+        .tab-pane.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #tab-info { overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+        .info-container { max-width: 1300px; margin: 40px auto 80px auto; padding: 0 30px; }
+        .section-header { display: flex; align-items: center; gap: 15px; margin: 20px 0 30px 0; }
+        .section-header .icon-wrap { background: var(--surface); padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); color: var(--pub); }
+        .section-header h2 { font-family: 'Poppins', sans-serif; font-size: 1.8rem; margin: 0; color: var(--text-main); }
+        .actor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 30px; }
+        .actor-card { background: var(--surface); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border-top: 6px solid transparent; }
+        .actor-card.pub { border-color: var(--pub); } .actor-card.priv { border-color: var(--priv); } .actor-card.soc { border-color: var(--soc); }
+        .actor-card-title { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; font-family: 'Poppins', sans-serif; font-size: 1.3rem; }
+        .pub .actor-card-title { color: var(--pub); } .priv .actor-card-title { color: var(--priv); } .soc .actor-card-title { color: var(--soc); }
+        .actor-item { display: flex; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #e2e8f0; }
+        .actor-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .actor-item-icon { background: #f1f5f9; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .pub .actor-item-icon { color: var(--pub); background: #eff6ff; } .priv .actor-item-icon { color: var(--priv); background: #fef3c7; } .soc .actor-item-icon { color: var(--soc); background: #f5f3ff; }
+        .actor-info h4 { margin: 0 0 5px 0; font-size: 1.05rem; color: var(--text-main); font-weight: 700; }
+        .actor-info p { margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+        .sub-program { margin-top: 15px; padding: 15px 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--pub); }
+        .sub-program h5 { margin: 0 0 10px 0; font-size: 0.95rem; color: var(--text-main); }
+        .sub-program ul { margin: 0; padding-left: 20px; font-size: 0.85rem; color: var(--text-muted); }
+        .table-glass { background: var(--surface); border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f8fafc; padding: 20px; font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 20px; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid #f1f5f9; line-height: 1.6; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge.amb { background: #dcfce7; color: #166534; } .badge.sal { background: #e0f2fe; color: #075985; } .badge.soc { background: #f3e8ff; color: #6b21a8; }
+        .badge.inst { background: #dbeafe; color: #1e40af; } .badge.eco { background: #ffedd5; color: #9a3412; } .badge.ter { background: #fef3c7; color: #b45309; }
+        #tab-map { background: #e2e8f0; }
+        #canvas-container { width: 100%; height: 100%; position: relative; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 40px 40px; background-color: #f8fafc; cursor: grab; }
+        canvas { display: block; width: 100%; height: 100%; z-index: 1; }
+        .camera-controls { position: absolute; bottom: 30px; left: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 10; }
+        .cam-btn { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); transition: all 0.2s; }
+        .cam-btn:hover { background: #ffffff; transform: scale(1.05); color: var(--pub); }
+        .map-ui-panel { position: absolute; bottom: 30px; right: 30px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 10; width: 280px; transition: all 0.3s; }
+        .legend-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .legend-header h4 { margin: 0; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;}
+        .legend-content { margin-top: 15px; display: block; }
+        .legend-item { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        .legend-color { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <button class="menu-toggle-btn" onclick="toggleMenu()"><span class="material-symbols-outlined" style="font-size:28px;">more_vert</span></button>
+        <div class="main-title"><span class="material-symbols-outlined">account_tree</span>Mapa integrado de la problemática</div>
+    </div>
+    <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <button class="menu-close-btn" onclick="toggleMenu()"><span class="material-symbols-outlined">close</span></button>
+        <div class="menu-section">
+            <h4>Navegación</h4>
+            <button class="menu-btn active" id="btn-tab-info" onclick="openTab('tab-info')"><span class="material-symbols-outlined">auto_stories</span> Contexto y Actores</button>
+            <button class="menu-btn" id="btn-tab-map" onclick="openTab('tab-map')"><span class="material-symbols-outlined">hub</span> Mapa de Sistemas</button>
+        </div>
+        <div class="menu-section" id="menu-escenarios" style="display: none;">
+            <h4>Control de Escenarios</h4>
+            <button class="menu-btn active" id="btn-scen-actual" onclick="setScenario('actual')"><span class="material-symbols-outlined">warning</span> Escenario Actual</button>
+            <button class="menu-btn" id="btn-scen-soluciones" onclick="setScenario('soluciones')"><span class="material-symbols-outlined">verified</span> Soluciones Estructurales</button>
+        </div>
+    </div>
+    <div id="tab-info" class="tab-pane active">
+        <div class="info-container">
+            <div class="section-header">
+                <div class="icon-wrap"><span class="material-symbols-outlined">account_tree</span></div>
+                <h2>Actores Clave del Ecosistema</h2>
+            </div>
+            <div class="actor-grid">
+                <div class="actor-card pub">
+                    <div class="actor-card-title"><span class="material-symbols-outlined">account_balance</span> Sector Público</div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">gavel</span></div><div class="actor-info"><h4>SEGAM</h4><p>Vigilancia ambiental estatal y atención de denuncias por contaminación.</p></div></div>
+                    <div class="actor-item" style="flex-direction: column;">
+                        <div style="display: flex; gap: 15px;"><div class="actor-item-icon"><span class="material-symbols-outlined">location_city</span></div><div class="actor-info"><h4>Ayuntamiento de San Luis Potosí</h4><p>Gestión de residuos sólidos urbanos y remediación de tiraderos.</p></div></div>
+                        <div class="sub-program"><h5>Dirección de Gestión Ecológica y Manejo de Residuos</h5><ul><li><strong>CIEA "Casa Colorada":</strong> Acopio para reciclaje especial.</li><li><strong>Descacharrización:</strong> Recolección de residuos voluminosos.</li><li><strong>Ecología Táctica:</strong> Rescate de espacios abandonados.</li></ul></div>
+                    </div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">local_fire_department</span></div><div class="actor-info"><h4>Protección Civil & COEPRIS</h4><p>Atención de incendios, riesgos sanitarios y protección a la salud humana.</p></div></div>
+                </div>
+                <div class="actor-card soc">
+                    <div class="actor-card-title"><span class="material-symbols-outlined">diversity_3</span> Sociedad Civil y Academia</div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">home_pin</span></div><div class="actor-info"><h4>Habitantes de colonias afectadas</h4><p>Actúan como generadores y padecen los riesgos sanitarios.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">policy</span></div><div class="actor-info"><h4>Ecopatrullas (Comités Vecinales)</h4><p>Estrategia participativa para georreferenciar e inspeccionar tiraderos.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">volunteer_activism</span></div><div class="actor-info"><h4>EduReciclaje AC</h4><p>Asociación local vinculada con el reciclaje y educación ambiental.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">school</span></div><div class="actor-info"><h4>Escuelas y Universidades</h4><p>Entidades clave para mitigar malas prácticas desde el origen.</p></div></div>
+                </div>
+                <div class="actor-card priv">
+                    <div class="actor-card-title"><span class="material-symbols-outlined">domain</span> Sector Privado e Informal</div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">construction</span></div><div class="actor-info"><h4>Sector de la Construcción</h4><p>Generadores de escombro. Utilizan el tiro clandestino o carretoneros.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">payments</span></div><div class="actor-info"><h4>Compradores de Cascajo</h4><p>Mercado informal que adquiere escombro.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">local_shipping</span></div><div class="actor-info"><h4>Carretoneros y Recolectores</h4><p>Transporte y disposición informal de residuos.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">recycling</span></div><div class="actor-info"><h4>Pepenadores</h4><p>Obtienen materiales reciclables trabajando en vulnerabilidad.</p></div></div>
+                    <div class="actor-item"><div class="actor-item-icon"><span class="material-symbols-outlined">fence</span></div><div class="actor-info"><h4>Propietarios de Predios Baldíos</h4><p>El abandono facilita focos de infección.</p></div></div>
+                </div>
+            </div>
+            <div class="section-header">
+                <div class="icon-wrap"><span class="material-symbols-outlined">table_view</span></div>
+                <h2>Matriz de Conflictos y Oportunidades</h2>
+            </div>
+            <div class="table-glass">
+                <table>
+                    <thead><tr><th>Área</th><th>Actor / Entidad</th><th>Conflicto / Problema</th><th>Impacto (Riesgo)</th><th>Oportunidad de Mejora</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="badge amb"><span class="material-symbols-outlined" style="font-size:12px;">eco</span> Ambiental</span></td><td><strong>SEGAM</strong></td><td>Dificultad para identificar predios.</td><td>Expansión de tiraderos.</td><td>Inventario SIG y drones.</td></tr>
+                        <tr><td><span class="badge inst"><span class="material-symbols-outlined" style="font-size:12px;">account_balance</span> Institucional</span></td><td><strong>Dirección de Ecología</strong></td><td>Sitios saneados vuelven a ser utilizados.</td><td>Aumento del gasto.</td><td>Seguimiento estricto.</td></tr>
+                        <tr><td><span class="badge eco"><span class="material-symbols-outlined" style="font-size:12px;">payments</span> Económica</span></td><td><strong>Constructoras</strong></td><td>Evasión de costos de disposición.</td><td>Montañas de escombro.</td><td>Control de manifiestos.</td></tr>
+                        <tr><td><span class="badge sal"><span class="material-symbols-outlined" style="font-size:12px;">health_and_safety</span> Salud Pública</span></td><td><strong>Habitantes / COEPRIS</strong></td><td>Residuos peligrosos.</td><td>Vectores y enfermedades.</td><td>Campañas de prevención.</td></tr>
+                        <tr><td><span class="badge soc"><span class="material-symbols-outlined" style="font-size:12px;">groups</span> Social</span></td><td><strong>Ecopatrullas</strong></td><td>Cobertura limitada.</td><td>Deterioro del paisaje.</td><td>Ecología Táctica.</td></tr>
+                        <tr><td><span class="badge ter"><span class="material-symbols-outlined" style="font-size:12px;">fence</span> Territorial</span></td><td><strong>Propietarios</strong></td><td>Abandono total de lotes.</td><td>Depósitos ilegales.</td><td>Sanciones.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="tab-map" class="tab-pane">
+        <div id="canvas-container">
+            <canvas id="loopyCanvas"></canvas>
+            <div class="camera-controls">
+                <button class="cam-btn" id="btnZoomIn" title="Acercar"><span class="material-symbols-outlined">add</span></button>
+                <button class="cam-btn" id="btnZoomOut" title="Alejar"><span class="material-symbols-outlined">remove</span></button>
+                <button class="cam-btn" id="btnResetCam" title="Centrar Mapa"><span class="material-symbols-outlined">crop_free</span></button>
+            </div>
+            <div class="map-ui-panel">
+                <div class="legend-header" onclick="toggleLegend()">
+                    <h4><span class="material-symbols-outlined" style="font-size:20px;">legend_toggle</span> Simbología</h4>
+                    <span class="material-symbols-outlined" id="legendIcon">expand_less</span>
+                </div>
+                <div class="legend-content" id="legendContent">
+                    <div class="legend-item"><div class="legend-color" style="background: var(--pub);"></div> Sector Público</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--priv);"></div> Privado / Territorial</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--soc);"></div> Sociedad Civil</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--riesgo);"></div> Conflictos y Riesgos</div>
+                    <div class="legend-item" id="leg-opp" style="display:none;"><div class="legend-color" style="background: var(--opp);"></div> Oportunidades</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+let menuOpen = false;
+function toggleMenu() { menuOpen = !menuOpen; document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
+function openTab(tabId) {
+    if(menuOpen) toggleMenu();
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('btn-tab-info').classList.remove('active'); document.getElementById('btn-tab-map').classList.remove('active');
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'tab-info') { document.getElementById('btn-tab-info').classList.add('active'); document.getElementById('menu-escenarios').style.display = 'none'; } 
+    else { document.getElementById('btn-tab-map').classList.add('active'); document.getElementById('menu-escenarios').style.display = 'block'; setTimeout(resizeCanvas, 50); }
+}
+function toggleLegend() { const c = document.getElementById('legendContent'); const i = document.getElementById('legendIcon'); if (c.style.display === 'none') { c.style.display = 'block'; i.innerText = 'expand_less'; } else { c.style.display = 'none'; i.innerText = 'expand_more'; } }
+
+let currentScenario = 'actual';
+function setScenario(scen) {
+    if(menuOpen) toggleMenu(); currentScenario = scen;
+    document.getElementById('btn-scen-actual').classList.remove('active'); document.getElementById('btn-scen-soluciones').classList.remove('active');
+    document.getElementById('btn-scen-' + scen).classList.add('active');
+    if (scen === 'soluciones') { for (let key in nodes) if (nodes[key].cat === 'opp') nodes[key].val = nodes[key].baseVal; document.getElementById('leg-opp').style.display = 'flex'; } 
+    else { for (let key in nodes) if (nodes[key].cat === 'opp') nodes[key].val = 0; document.getElementById('leg-opp').style.display = 'none'; particles = particles.filter(p => nodes[p.from].cat !== 'opp' && nodes[p.to].cat !== 'opp'); }
+}
+function isNodeActive(id) { return currentScenario === 'soluciones' || nodes[id].cat !== 'opp'; }
+
+const canvas = document.getElementById('loopyCanvas'); const container = document.getElementById('canvas-container'); const ctx = canvas.getContext('2d', { alpha: true });
+let camera = { x: 0, y: 0, scale: 0.65 }; let isDragging = false; let dragStart = { x: 0, y: 0 };
+function resizeCanvas() { if(container.clientWidth > 0) { const dpr = window.devicePixelRatio || 1; canvas.width = container.clientWidth * dpr; canvas.height = container.clientHeight * dpr; ctx.scale(dpr, dpr); } }
+window.addEventListener('resize', resizeCanvas); setTimeout(resizeCanvas, 100);
+container.addEventListener('mousedown', (e) => { isDragging = true; dragStart = { x: e.clientX - camera.x, y: e.clientY - camera.y }; });
+window.addEventListener('mousemove', (e) => { if (!isDragging) return; camera.x = e.clientX - dragStart.x; camera.y = e.clientY - dragStart.y; });
+window.addEventListener('mouseup', () => isDragging = false);
+container.addEventListener('wheel', (e) => { e.preventDefault(); const z = 0.001; const w = e.deltaY < 0 ? 1 : -1; camera.scale = Math.min(Math.max(0.2, camera.scale * Math.exp(w * z * 100)), 3.0); }, {passive: false});
+document.getElementById('btnZoomIn').addEventListener('click', () => { camera.scale = Math.min(camera.scale * 1.2, 3.0); });
+document.getElementById('btnZoomOut').addEventListener('click', () => { camera.scale = Math.max(camera.scale * 0.8, 0.2); });
+document.getElementById('btnResetCam').addEventListener('click', () => { camera.x = 0; camera.y = 0; camera.scale = 0.65; });
+
+const C = { pub: '#2563EB', priv: '#D97706', soc: '#8B5CF6', riesgo: '#E11D48', opp: '#10B981', line: '#94A3B8' };
+const nodes = {
+    segam: { cat: 'base', icon: 'account_balance', label: 'SEGAM', x: -600, y: -300, color: C.pub, val: 0.0, rate: 0 },
+    ayto: { cat: 'base', icon: 'location_city', label: 'Ayuntamiento de\nSan Luis Potosí', x: -600, y: -100, color: C.pub, val: 0.7, rate: 0 },
+    dge: { cat: 'base', icon: 'cleaning_services', label: 'Dirección de Gestión Ecológica', x: -350, y: -50, color: C.pub, val: 0.5, rate: 0 },
+    pc: { cat: 'base', icon: 'local_fire_department', label: 'Protección Civil', x: 150, y: -350, color: C.pub, val: 0, rate: 0 },
+    coepris: { cat: 'base', icon: 'health_and_safety', label: 'Secretaría de Salud\n(COEPRIS)', x: 350, y: 250, color: C.pub, val: 0, rate: 0 },
+    const: { cat: 'base', icon: 'construction', label: 'Sector de la Construcción', x: -500, y: 300, color: C.priv, val: 0.8, rate: 0 },
+    compradores: { cat: 'base', icon: 'payments', label: 'Compradores de\nEscombro', x: -500, y: 450, color: C.priv, val: 0.6, rate: 0 },
+    redamb: { cat: 'base', icon: 'fire_truck', label: 'Red Ambiental', x: -300, y: 350, color: C.priv, val: 0.7, rate: 0 },
+    carretoneros: { cat: 'base', icon: 'local_shipping', label: 'Carretoneros', x: -250, y: 150, color: C.priv, val: 0.9, rate: 0 },
+    pepenadores: { cat: 'base', icon: 'recycling', label: 'Pepenadores', x: -50, y: 250, color: C.priv, val: 0.6, rate: 0 },
+    propietarios: { cat: 'base', icon: 'fence', label: 'Propietarios de Predios', x: 100, y: -250, color: C.priv, val: 0.8, rate: 0 },
+    habitantes: { cat: 'base', icon: 'groups', label: 'Habitantes', x: 300, y: 0, color: C.soc, val: 0.5, rate: 0 },
+    tiraderos: { cat: 'base', icon: 'delete_forever', label: 'Tiraderos Clandestinos', x: -100, y: 50, color: C.riesgo, val: 0.4, rate: 0 },
+    r_amb: { cat: 'base', icon: 'warning', label: 'Riesgo Ambiental', x: 100, y: -100, color: C.riesgo, val: 0, rate: 0 },
+    r_san: { cat: 'base', icon: 'coronavirus', label: 'Riesgo Sanitario', x: 100, y: 150, color: C.riesgo, val: 0, rate: 0 },
+    ecopatrulla: { cat: 'base', icon: 'policy', label: 'Ecopatrullas', x: 550, y: -150, color: C.soc, val: 0.3, rate: 0 },
+    edureciclaje: { cat: 'base', icon: 'volunteer_activism', label: 'EduReciclaje AC', x: 550, y: 100, color: C.soc, val: 0.2, rate: 0 },
+    escuelas: { cat: 'base', icon: 'school', label: 'Escuelas', x: 550, y: -300, color: C.soc, val: 0.4, rate: 0 },
+    c_soc: { cat: 'base', icon: 'record_voice_over', label: 'Conflicto Social', x: 300, y: 350, color: C.riesgo, val: 0, rate: 0 },
+    c_inst: { cat: 'base', icon: 'gavel', label: 'Conflicto Institucional', x: -350, y: -300, color: C.riesgo, val: 0.9, rate: 0 },
+    r_econ: { cat: 'base', icon: 'trending_down', label: 'Riesgo Económico', x: -450, y: 50, color: C.riesgo, val: 0, rate: 0 },
+    ciea: { cat: 'opp', icon: 'eco', label: 'CIEA Casa Colorada', x: -200, y: -450, color: C.opp, val: 0, baseVal: 0.3, rate: 0 },
+    descacharrizacion: { cat: 'opp', icon: 'home_repair_service', label: 'Descacharrización', x: -450, y: 200, color: C.opp, val: 0, baseVal: 0.3, rate: 0 },
+    tactica: { cat: 'opp', icon: 'park', label: 'Ecología Táctica', x: 0, y: -200, color: C.opp, val: 0, baseVal: 0.3, rate: 0 },
+    coord: { cat: 'opp', icon: 'handshake', label: 'Coordinación Institucional', x: -450, y: -450, color: C.opp, val: 0, baseVal: 0.3, rate: 0 }
+};
+
+const links = [
+    { from: 'habitantes', to: 'carretoneros', pol: 1, str: 0.025 }, { from: 'habitantes', to: 'tiraderos', pol: 1, str: 0.015 },
+    { from: 'habitantes', to: 'propietarios', pol: 1, str: 0.015 }, { from: 'propietarios', to: 'tiraderos', pol: 1, str: 0.015 },
+    { from: 'propietarios', to: 'r_amb', pol: 1, str: 0.01 }, { from: 'propietarios', to: 'r_san', pol: 1, str: 0.012 },
+    { from: 'tiraderos', to: 'r_amb', pol: 1, str: 0.015 }, { from: 'tiraderos', to: 'r_san', pol: 1, str: 0.015 },
+    { from: 'r_amb', to: 'habitantes', pol: 1, str: 0.018 }, { from: 'r_san', to: 'habitantes', pol: 1, str: 0.018 },
+    { from: 'const', to: 'carretoneros', pol: 1, str: 0.008 }, { from: 'const', to: 'tiraderos', pol: 1, str: 0.015 },
+    { from: 'const', to: 'compradores', pol: 1, str: 0.01 }, { from: 'redamb', to: 'carretoneros', pol: 1, str: 0.003 },
+    { from: 'carretoneros', to: 'tiraderos', pol: 1, str: 0.015 }, { from: 'tiraderos', to: 'pepenadores', pol: 1, str: 0.006 },
+    { from: 'habitantes', to: 'c_soc', pol: 1, str: 0.015 }, { from: 'c_soc', to: 'habitantes', pol: 1, str: 0.005 },
+    { from: 'r_amb', to: 'pc', pol: 1, str: 0.01 }, { from: 'pc', to: 'r_amb', pol: -1, str: 0.02 },
+    { from: 'r_san', to: 'coepris', pol: 1, str: 0.01 }, { from: 'coepris', to: 'r_san', pol: -1, str: 0.02 },
+    { from: 'c_soc', to: 'dge', pol: 1, str: 0.008 }, { from: 'dge', to: 'tiraderos', pol: -1, str: 0.015 },
+    { from: 'dge', to: 'r_econ', pol: 1, str: 0.01 }, { from: 'r_econ', to: 'ayto', pol: 1, str: 0.008 },
+    { from: 'ayto', to: 'dge', pol: 1, str: 0.005 }, { from: 'segam', to: 'c_inst', pol: -1, str: 0.02 },
+    { from: 'c_inst', to: 'tiraderos', pol: 1, str: 0.012 }, { from: 'c_inst', to: 'propietarios', pol: 1, str: 0.01 },
+    { from: 'escuelas', to: 'habitantes', pol: -1, str: 0.015 }, { from: 'habitantes', to: 'ecopatrulla', pol: 1, str: 0.006 },
+    { from: 'ecopatrulla', to: 'tiraderos', pol: -1, str: 0.01 }, { from: 'edureciclaje', to: 'tiraderos', pol: -1, str: 0.005 },
+    { from: 'descacharrizacion', to: 'carretoneros', pol: -1, str: 0.015 }, { from: 'ciea', to: 'carretoneros', pol: -1, str: 0.012 },
+    { from: 'tactica', to: 'tiraderos', pol: -1, str: 0.025 }, { from: 'coord', to: 'c_inst', pol: -1, str: 0.025 },
+    { from: 'coord', to: 'propietarios', pol: -1, str: 0.015 }
+];
+
+let particles = [];
+function updateSystem() {
+    for (let key in nodes) nodes[key].rate = 0;
+    let activeLinks = links.filter(l => isNodeActive(l.from) && isNodeActive(l.to));
+    activeLinks.forEach(link => {
+        const src = nodes[link.from]; const tgt = nodes[link.to]; tgt.rate += src.val * link.str * link.pol;
+        if (Math.random() < src.val * Math.abs(link.str) * 10) {
+            particles.push({ from: link.from, to: link.to, sx: src.x, sy: src.y, tx: tgt.x, ty: tgt.y, c: link.pol > 0 ? src.color : '#cbd5e1', prog: 0, spd: 0.003 + Math.random() * 0.006 });
+        }
+    });
+    nodes.const.rate += 0.002; nodes.c_inst.rate += 0.001; 
+    for (let key in nodes) { if (!isNodeActive(key)) continue; let n = nodes[key]; if(key === 'segam') n.val = 0.0; n.val += n.rate; n.val = Math.max(0, Math.min(1, n.val)); }
+}
+
+function drawSystem() {
+    if(container.clientWidth === 0) return;
+    const w = canvas.width / (window.devicePixelRatio || 1); const h = canvas.height / (window.devicePixelRatio || 1);
+    container.style.backgroundPosition = `${(w/2) + camera.x * 0.5}px ${(h/2) + camera.y * 0.5}px`;
+    container.style.backgroundSize = `${40 * camera.scale}px ${40 * camera.scale}px`;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore();
+    ctx.save(); ctx.translate(w / 2 + camera.x, h / 2 + camera.y); ctx.scale(camera.scale, camera.scale); ctx.lineCap = 'round';
+    const getControlPoint = (srcX, srcY, tgtX, tgtY, id1, id2) => { let dx = tgtX - srcX; let dy = tgtY - srcY; let nx = -dy; let ny = dx; let len = Math.sqrt(nx*nx + ny*ny); if(len > 0) { nx /= len; ny /= len; } let bow = id1 > id2 ? 70 : -70; return { x: (srcX + tgtX)/2 + nx * bow, y: (srcY + tgtY)/2 + ny * bow }; };
+    let activeLinks = links.filter(l => isNodeActive(l.from) && isNodeActive(l.to));
+    activeLinks.forEach(link => {
+        const src = nodes[link.from]; const tgt = nodes[link.to]; let cp = getControlPoint(src.x, src.y, tgt.x, tgt.y, link.from, link.to);
+        ctx.beginPath(); ctx.moveTo(src.x, src.y); ctx.quadraticCurveTo(cp.x, cp.y, tgt.x, tgt.y);
+        ctx.lineWidth = Math.abs(link.str) >= 0.02 ? 4 : 2; ctx.strokeStyle = link.pol > 0 ? src.color : C.line; ctx.globalAlpha = 0.25; ctx.stroke(); ctx.globalAlpha = 1.0;
+    });
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i]; p.prog += p.spd; if (p.prog >= 1) { particles.splice(i, 1); continue; }
+        let cp = getControlPoint(p.sx, p.sy, p.tx, p.ty, p.from, p.to); let t = p.prog; let px = (1-t)*(1-t)*p.sx + 2*(1-t)*t*cp.x + t*t*p.tx; let py = (1-t)*(1-t)*p.sy + 2*(1-t)*t*cp.y + t*t*p.ty;
+        ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2); ctx.fillStyle = p.c; ctx.shadowBlur = 12; ctx.shadowColor = p.c; ctx.fill(); ctx.shadowBlur = 0;
+    }
+    for (let key in nodes) {
+        if (!isNodeActive(key)) continue; let n = nodes[key]; let r = 48;
+        ctx.shadowColor = n.color; ctx.shadowBlur = 25; ctx.shadowOffsetY = 5;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+        ctx.lineWidth = 4; ctx.strokeStyle = n.color; ctx.stroke();
+        let fillH = n.val * (r * 2);
+        if (fillH > 0) { ctx.save(); ctx.beginPath(); ctx.arc(n.x, n.y, r - 2, 0, Math.PI * 2); ctx.clip(); ctx.beginPath(); ctx.rect(n.x - r, n.y + r - fillH, r * 2, fillH); ctx.fillStyle = n.color; ctx.globalAlpha = 0.15; ctx.fill(); ctx.restore(); }
+        ctx.font = "36px 'Material Symbols Outlined'"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = n.color; ctx.globalAlpha = 0.9; ctx.fillText(n.icon, n.x, n.y + 2); ctx.globalAlpha = 1.0;
+        let lines = n.label.split('\n'); ctx.font = "600 13px Inter, sans-serif"; let maxW = 0; lines.forEach(l => { let w = ctx.measureText(l).width; if(w > maxW) maxW = w; }); let boxW = maxW + 30; let boxH = (lines.length * 18) + 14;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; ctx.beginPath(); ctx.roundRect(n.x - (boxW/2), n.y + r + 18, boxW, boxH, 10); ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.stroke();
+        lines.forEach((line, index) => { if(index === 0) { ctx.fillStyle = '#0f172a'; ctx.font = "700 13px Inter, sans-serif"; } else { ctx.fillStyle = '#64748b'; ctx.font = "500 11.5px Inter, sans-serif"; } ctx.fillText(line, n.x, n.y + r + 34 + (index * 18)); });
+    }
+    ctx.restore(); 
+}
+document.fonts.ready.then(function () { loop(); }); function loop() { updateSystem(); drawSystem(); requestAnimationFrame(loop); }
+</script>
+</body>
+</html>
